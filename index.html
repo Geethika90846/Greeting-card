@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Special Message for Siri</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #000;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Canvas for digital rain */
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Glassmorphic overlay card */
+    .card {
+      position: relative;
+      z-index: 10;
+      background: rgba(18, 18, 20, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 0, 127, 0.3);
+      box-shadow: 0 0 30px rgba(255, 0, 127, 0.25);
+      border-radius: 20px;
+      padding: 40px 30px;
+      width: 90%;
+      max-width: 580px;
+      text-align: center;
+      color: #fff;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255, 0, 127, 0.2);
+      border: 1px solid #ff007f;
+      color: #ff007f;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 15px;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+    }
+
+    p.subtitle {
+      font-size: 1.05rem;
+      color: #e0e0e0;
+      line-height: 1.6;
+      margin-bottom: 30px;
+      white-space: pre-line;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+      min-height: 50px;
+    }
+
+    button {
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-yes {
+      background: linear-gradient(135deg, #ff007f, #ff5252);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.5);
+    }
+
+    .btn-yes:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 25px rgba(255, 0, 127, 0.8);
+    }
+
+    .btn-no {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ccc;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: absolute;
+      transition: all 0.2s ease;
+    }
+
+    /* Response View (Hidden by default) */
+    .success-view {
+      display: none;
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    .heart-icon {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      animation: pulse 1.5s infinite;
+    }
+
+    .status-pill {
+      display: inline-block;
+      margin-top: 25px;
+      background: rgba(0, 230, 118, 0.15);
+      border: 1px solid #00e676;
+      color: #00e676;
+      font-size: 0.85rem;
+      padding: 8px 18px;
+      border-radius: 20px;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="matrixCanvas"></canvas>
+
+  <div class="card">
+    <!-- Initial State -->
+    <div id="askView">
+      <div class="badge">Special Confidential Message</div>
+      <h1>Siri ♥</h1>
+      <p class="subtitle">I created something special just for you... Will you go out with me?</p>
+      
+      <div class="btn-group" id="btnContainer">
+        <button class="btn-yes" onclick="handleYes()">YES! 💕</button>
+        <button class="btn-no" id="noBtn" onmouseover="dodgeNo()" onclick="dodgeNo()">No</button>
+      </div>
+    </div>
+
+    <!-- Success State after clicking YES -->
+    <div id="successView" class="success-view">
+      <div class="heart-icon">💖</div>
+      <h1>Best Decision Ever!</h1>
+      <p class="subtitle">I am glad , that I have you in my life. Let's create beautiful moments together in our life. For me you are not just a random person, i always want us to be happy and together.
+
+May be we are far in distance, but we were never apart. I am happy to have you as a sister, frnd , whatever name we give to our bound..... I wish we will grow old together with lots of lots of memories, fights, laughs.
+
+Give me your life, I will give you my life's love 💕.</p>
+      <div class="status-pill">✓ Response saved! Notification sent successfully ♥</div>
+    </div>
+  </div>
+
+  <script>
+    /* Canvas Digital Rain */
+    const canvas = document.getElementById('matrixCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+
+    const characters = 'SiriGeethu♥❥❣ ';
+    const fontSize = 18;
+    let columns = Math.floor(canvas.width / fontSize);
+
+    const drops = [];
+    for (let i = 0; i < columns; i++) {
+      drops[i] = Math.random() * -100;
+    }
+
+    function draw() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#ff007f';
+      ctx.font = `${fontSize}px 'Segoe UI Emoji', 'Apple Color Emoji', Arial, monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = characters.charAt(Math.floor(Math.random() * characters.length));
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        ctx.fillText(text, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+
+        drops[i]++;
+      }
+    }
+
+    setInterval(draw, 33);
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+      columns = Math.floor(canvas.width / fontSize);
+      drops.length = 0;
+      for (let i = 0; i < columns; i++) {
+        drops[i] = Math.random() * -100;
+      }
+    });
+
+    /* Evasive "No" Button */
+    function dodgeNo() {
+      const noBtn = document.getElementById('noBtn');
+      const container = document.getElementById('btnContainer');
+      
+      const maxX = 120;
+      const maxY = 80;
+      
+      const randomX = (Math.random() - 0.5) * maxX * 2;
+      const randomY = (Math.random() - 0.5) * maxY * 2;
+
+      noBtn.style.transform = `translate(${randomX}px, ${randomY}px)`;
+    }
+
+    /* Handshake / Switch View */
+    async function handleYes() {
+      document.getElementById('askView').style.display = 'none';
+      document.getElementById('successView').style.display = 'block';
+
+      // Optional API connection to backend
+      try {
+        await fetch('http://localhost:5000/api/confess', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answer: 'YES', recipient: 'Siri' })
+        });
+      } catch (err) {
+        console.log('Backend server offline, fallback enabled.');
+      }
+    }
+  </script>
+</body>
+</html>
